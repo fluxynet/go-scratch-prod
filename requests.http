@@ -1,0 +1,11 @@
+POST http://127.0.0.1:9000/api/tasks
+
+{
+    "title": "Have lunch",
+    "description": "Eat a wondrous lunch to keep thyself from hunger",
+    "is_done": false
+}
+
+###
+
+GET http://127.0.0.1:9000/api/tasks
