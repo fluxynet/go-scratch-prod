@@ -1,12 +1,19 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
 	gsp "github.com/fluxynet/go-scratch-prod"
+	taskRepositoryG "github.com/fluxynet/go-scratch-prod/gorm/tasks"
+	taskRepositoryS "github.com/fluxynet/go-scratch-prod/sql/tasks"
+	taskService "github.com/fluxynet/go-scratch-prod/task"
+	taskHttp "github.com/fluxynet/go-scratch-prod/web/task"
 
 	"github.com/go-chi/chi/v5"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	_ "modernc.org/sqlite"
 )
 
@@ -47,10 +54,31 @@ func loadConfig() (*Config, error) {
 	return &c, nil
 }
 
+func gormTaskRepo(cfg Config) gsp.TaskRepo {
+	db, err := gorm.Open(sqlite.Open(cfg.DSN))
+	if err != nil {
+		log.Fatalln("failed to connect to database: " + err.Error())
+	}
+
+	db.AutoMigrate(&gsp.Task{})
+
+	return taskRepositoryG.New(db)
+}
+
+func sqliteTaskRepo(cfg Config) gsp.TaskRepo {
+	db, err := sql.Open("sqlite", cfg.DSN)
+	if err != nil {
+		log.Fatalln("failed to connect to database: " + err.Error())
+	}
+
+	return taskRepositoryS.New(db)
+}
+
 func prodRouter(cfg Config) http.Handler {
 	r := chi.NewRouter()
 
-	var taskApi gsp.TaskHttpService //TODO provide concrete implementation
+	taskSvc := taskService.New(gormTaskRepo(cfg))
+	taskApi := taskHttp.New(taskSvc)
 
 	r.Post("/tasks", taskApi.Create)
 	r.Put("/tasks/{id}", taskApi.Update)
