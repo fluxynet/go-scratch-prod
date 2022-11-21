@@ -9,12 +9,13 @@ import (
 	taskRepositoryG "github.com/fluxynet/go-scratch-prod/gorm/tasks"
 	taskRepositoryS "github.com/fluxynet/go-scratch-prod/sql/tasks"
 	taskService "github.com/fluxynet/go-scratch-prod/task"
+	"github.com/fluxynet/go-scratch-prod/web"
 	taskHttp "github.com/fluxynet/go-scratch-prod/web/task"
 
 	"github.com/go-chi/chi/v5"
+	_ "github.com/mattn/go-sqlite3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	_ "modernc.org/sqlite"
 )
 
 type Config struct {
@@ -37,6 +38,8 @@ func main() {
 		router.Mount("/api", prodRouter(*cfg))
 	}
 
+	router.Get("/status", web.TimestampHandler)
+
 	log.Println("Server started on: " + cfg.ListenAddr)
 
 	http.ListenAndServe(cfg.ListenAddr, router)
@@ -45,7 +48,7 @@ func main() {
 func loadConfig() (*Config, error) {
 	c := Config{
 		IsDev:      true,
-		ListenAddr: "127.0.0.1:9000",
+		ListenAddr: ":9000",
 		DSN:        ":memory:",
 	}
 
