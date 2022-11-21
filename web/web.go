@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -15,9 +16,10 @@ import (
 const (
 	// ContentTypeJSON is the content type for JSON
 	ContentTypeJSON = "application/json"
-)
 
-var ()
+	// ContentTypeText is the content type for plain text
+	ContentTypeText = "text/plain"
+)
 
 // Print sends data to the browser
 func Print(w http.ResponseWriter, status int, ctype string, content []byte) {
@@ -83,7 +85,6 @@ func ReadJsonBodyInto(w http.ResponseWriter, r *http.Request, target interface{}
 	if err != nil {
 		return err
 	}
-
 	err = json.Unmarshal(b, target)
 	if err != nil {
 		JsonError(w, http.StatusBadRequest, err)
@@ -105,4 +106,9 @@ func ChiIDGetter(r *http.Request) (string, error) {
 	}
 
 	return id, nil
+}
+
+// TimestampHandler is a simple http handler that returns local time. Useful for status checking
+func TimestampHandler(w http.ResponseWriter, r *http.Request) {
+	Print(w, http.StatusOK, ContentTypeText, []byte(time.Now().Local().Format(time.RFC3339Nano)))
 }
