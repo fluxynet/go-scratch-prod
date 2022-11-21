@@ -5,10 +5,13 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // Task that needs to be accomplished
 type Task struct {
+	gorm.Model  `json:"-"`
 	ID          string    `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
